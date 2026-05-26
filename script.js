@@ -15,7 +15,7 @@ let pendingResolve = null;
 function log(text){
 
     consoleElement.innerHTML +=
-        text + "\\n";
+        text + "\n";
 
     consoleElement.scrollTop =
         consoleElement.scrollHeight;
@@ -87,7 +87,9 @@ async function executarBloco(linhas){
     ){
 
         let linha =
-            linhas[i].trim();
+            linhas[i]
+            .replace(/\r/g, "")
+            .trim();
 
         // ==========================
         // IGNORAR LINHA VAZIA
@@ -192,7 +194,7 @@ async function executarBloco(linhas){
 
             let conteudo =
                 linha
-                .substring(9, fecha)
+                .slice(9, fecha)
                 .trim();
 
             let resultado =
@@ -220,10 +222,11 @@ async function executarBloco(linhas){
 
             let conteudo =
                 linha
-                .substring(9, fecha)
+                .slice(9, fecha)
                 .trim();
 
             // Variável
+
             if(
                 variables.hasOwnProperty(
                     conteudo
@@ -239,6 +242,7 @@ async function executarBloco(linhas){
             }else{
 
                 // Expressão
+
                 try{
 
                     let resultado =
@@ -255,6 +259,7 @@ async function executarBloco(linhas){
                 }catch{
 
                     // Texto puro
+
                     log(conteudo);
                 }
             }
@@ -295,6 +300,7 @@ async function executarBloco(linhas){
 
                 let atual =
                     linhas[i]
+                    .replace(/\r/g, "")
                     .trim();
 
                 // SENAO
@@ -412,7 +418,9 @@ async function executarCodigo(){
         .value;
 
     let linhas =
-        codigo.split("\\n");
+        codigo
+        .replace(/\r/g, "")
+        .split("\n");
 
     try{
 
@@ -421,13 +429,13 @@ async function executarCodigo(){
         );
 
         log(
-            "\\nExecução finalizada."
+            "\nExecução finalizada."
         );
 
     }catch(err){
 
         log(
-            "\\nERRO: " +
+            "\nERRO: " +
             err.message
         );
     }
@@ -450,6 +458,8 @@ LER(x)
 LER(y)
 
 soma = x + y
+
+ESCREVER(Resultado:)
 
 MOSTRAR(soma)
 
