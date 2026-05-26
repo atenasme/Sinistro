@@ -194,7 +194,7 @@ async function executarBloco(linhas){
 
             let conteudo =
                 linha
-                .slice(9, fecha)
+                .slice(8, fecha)
                 .trim();
 
             let resultado =
