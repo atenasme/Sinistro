@@ -205,6 +205,59 @@ async function executarBloco(linhas){
             continue;
         }
 
+
+        // ==========================
+        // ESCREVER
+        // ==========================
+        
+        if(
+            linha.startsWith(
+                "ESCREVER("
+            )
+        ){
+        
+            let fecha =
+                linha.lastIndexOf(")");
+        
+            let conteudo =
+                linha
+                .substring(9, fecha)
+                .trim();
+        
+            // Se existir variável
+            if(
+                variables.hasOwnProperty(
+                    conteudo
+                )
+            ){
+        
+                log(
+                    String(
+                        variables[conteudo]
+                    )
+                );
+        
+            }else{
+        
+                // Tenta avaliar como expressão
+                try{
+        
+                    let resultado =
+                        avaliar(conteudo);
+        
+                    log(
+                        String(resultado)
+                    );
+        
+                }catch{
+        
+                    // Texto puro sem aspas
+                    log(conteudo);
+                }
+            }
+        
+            continue;
+        }
         // ==========================
         // SE / SENAO
         // ==========================
