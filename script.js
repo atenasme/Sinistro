@@ -77,7 +77,7 @@ async function executarBloco(linhas){
 
         if(linha.startsWith("MOSTRAR(")){
 
-            const conteudo = linha.substring(9, linha.length - 1);
+            const conteudo = linha.substring(8, linha.length - 1);
 
             if(variables.hasOwnProperty(conteudo)){
                 log(String(variables[conteudo]));
