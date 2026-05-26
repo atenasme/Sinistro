@@ -1,0 +1,94 @@
+
+body{
+    margin:0;
+    background:#0f172a;
+    color:white;
+    font-family:Consolas, monospace;
+}
+
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:15px;
+    background:#111827;
+    border-bottom:2px solid #1e293b;
+}
+
+.buttons button{
+    margin-left:10px;
+}
+
+button{
+    background:#2563eb;
+    color:white;
+    border:none;
+    padding:10px 15px;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#1d4ed8;
+}
+
+.container{
+    display:flex;
+    height:calc(100vh - 80px);
+}
+
+.editor-area,
+.console-area{
+    width:50%;
+    padding:10px;
+    box-sizing:border-box;
+}
+
+.title{
+    margin-bottom:10px;
+    font-weight:bold;
+    color:#93c5fd;
+}
+
+#editor{
+    width:100%;
+    height:95%;
+    resize:none;
+    background:#020617;
+    color:#e2e8f0;
+    border:1px solid #334155;
+    padding:15px;
+    font-size:16px;
+    outline:none;
+}
+
+.console-area{
+    display:flex;
+    flex-direction:column;
+}
+
+#console{
+    flex:1;
+    background:#020617;
+    border:1px solid #334155;
+    padding:15px;
+    overflow-y:auto;
+    white-space:pre-wrap;
+}
+
+.input-area{
+    display:flex;
+    margin-top:10px;
+}
+
+#userInput{
+    flex:1;
+    padding:10px;
+    background:#111827;
+    border:1px solid #334155;
+    color:white;
+}
+
+.input-area button{
+    margin-left:10px;
+}

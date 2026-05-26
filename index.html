@@ -1,0 +1,63 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PseudoC IDE</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="topbar">
+    <h1>Compilador PseudoC</h1>
+
+    <div class="buttons">
+        <button onclick="executarCodigo()">▶ Executar</button>
+        <button onclick="limparConsole()">🗑 Limpar Console</button>
+        <button onclick="carregarExemplo()">📄 Exemplo</button>
+    </div>
+</div>
+
+<div class="container">
+
+    <div class="editor-area">
+        <div class="title">EDITOR — PSEUDOC</div>
+
+<textarea id="editor">
+INICIO
+
+GUARDAR x, y, soma
+
+LER(x)
+LER(y)
+
+soma = x + y
+
+SE(soma > 10)
+    MOSTRAR(soma)
+SENAO
+    MOSTRAR(0)
+FIMSE
+
+FIM
+</textarea>
+
+    </div>
+
+    <div class="console-area">
+        <div class="title">CONSOLE — SAÍDA</div>
+
+        <div id="console"></div>
+
+        <div class="input-area">
+            <input id="userInput" placeholder="Digite a entrada do usuário...">
+            <button onclick="enviarEntrada()">Enviar</button>
+        </div>
+    </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
