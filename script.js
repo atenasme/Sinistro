@@ -65,7 +65,7 @@ function avaliar(expressao){
             "return (" + expressao + ");"
         )(...Object.values(variables));
 
-    }catch(err){
+    }catch{
 
         throw new Error(
             "Erro na expressão: " +
@@ -75,7 +75,7 @@ function avaliar(expressao){
 }
 
 // ======================================
-// EXECUÇÃO
+// EXECUTAR BLOCO
 // ======================================
 
 async function executarBloco(linhas){
@@ -90,7 +90,7 @@ async function executarBloco(linhas){
             linhas[i].trim();
 
         // ==========================
-        // IGNORAR LINHAS VAZIAS
+        // IGNORAR LINHA VAZIA
         // ==========================
 
         if(linha === ""){
@@ -297,6 +297,8 @@ async function executarBloco(linhas){
                     linhas[i]
                     .trim();
 
+                // SENAO
+
                 if(
                     atual === "SENAO"
                 ){
@@ -308,11 +310,15 @@ async function executarBloco(linhas){
                     continue;
                 }
 
+                // FIMSE
+
                 if(
                     atual === "FIMSE"
                 ){
                     break;
                 }
+
+                // Adicionar linha
 
                 if(usandoSenao){
 
@@ -329,6 +335,8 @@ async function executarBloco(linhas){
 
                 i++;
             }
+
+            // Executar condição
 
             if(
                 avaliar(condicao)
@@ -442,8 +450,6 @@ LER(x)
 LER(y)
 
 soma = x + y
-
-ESCREVER(Resultado:)
 
 MOSTRAR(soma)
 
