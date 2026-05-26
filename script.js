@@ -110,7 +110,7 @@ async function executarBloco(linhas){
         if(linha.startsWith("MOSTRAR(")){
 
             const conteudo = linha
-                .slice(9, -1)
+                .slice(8, -1)
                 .trim();
 
             if(variables.hasOwnProperty(conteudo)){
