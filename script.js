@@ -74,7 +74,11 @@ async function executarBloco(linhas){
 
             vars.forEach(v => {
 
-                variables[v.trim()] = 0;
+                const nome = v.trim();
+
+                if(nome.length > 0){
+                    variables[nome] = 0;
+                }
             });
 
             continue;
