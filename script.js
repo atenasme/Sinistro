@@ -4,27 +4,38 @@ const inputElement = document.getElementById("userInput");
 let variables = {};
 let pendingResolve = null;
 
+// ======================================
+// CONSOLE
+// ======================================
+
 function log(text){
-    consoleElement.innerHTML += text + "\\n";
-    consoleElement.scrollTop = consoleElement.scrollHeight;
+
+    consoleElement.innerHTML += text + "\n";
+
+    consoleElement.scrollTop =
+        consoleElement.scrollHeight;
 }
 
 function limparConsole(){
+
     consoleElement.innerHTML = "";
 }
 
+// ======================================
+// INPUT
+// ======================================
+
 function enviarEntrada(){
 
-    if(pendingResolve){
+    if(!pendingResolve) return;
 
-        const value = inputElement.value;
+    const valor = inputElement.value;
 
-        inputElement.value = "";
+    inputElement.value = "";
 
-        pendingResolve(value);
+    pendingResolve(valor);
 
-        pendingResolve = null;
-    }
+    pendingResolve = null;
 }
 
 function esperarEntrada(){
@@ -35,20 +46,30 @@ function esperarEntrada(){
     });
 }
 
-function avaliar(expr){
+// ======================================
+// EXPRESSÕES
+// ======================================
+
+function avaliar(expressao){
 
     try{
 
         return Function(
             ...Object.keys(variables),
-            `return ${expr}`
+            `return ${expressao}`
         )(...Object.values(variables));
 
     }catch(err){
 
-        throw new Error("Erro na expressão: " + expr);
+        throw new Error(
+            "Erro na expressão: " + expressao
+        );
     }
 }
+
+// ======================================
+// EXECUÇÃO
+// ======================================
 
 async function executarBloco(linhas){
 
@@ -56,37 +77,51 @@ async function executarBloco(linhas){
 
         let linha = linhas[i].trim();
 
-        if(!linha) continue;
-
-        if(linha === "INICIO" || linha === "FIM"){
+        // Ignorar linha vazia
+        if(linha.length === 0){
             continue;
         }
 
-        // =====================
+        // ==========================
+        // INICIO / FIM
+        // ==========================
+
+        if(
+            linha === "INICIO" ||
+            linha === "FIM"
+        ){
+            continue;
+        }
+
+        // ==========================
         // GUARDAR
-        // =====================
+        // ==========================
 
         if(linha.startsWith("GUARDAR")){
 
-            const vars = linha
+            let resto = linha
                 .replace("GUARDAR", "")
-                .split(",");
+                .trim();
 
-            vars.forEach(v => {
+            let listaVariaveis =
+                resto.split(",");
 
-                const nome = v.trim();
+            for(let nome of listaVariaveis){
+
+                nome = nome.trim();
 
                 if(nome.length > 0){
+
                     variables[nome] = 0;
                 }
-            });
+            }
 
             continue;
         }
 
-        // =====================
+        // ==========================
         // LER
-        // =====================
+        // ==========================
 
         if(linha.startsWith("LER(")){
 
@@ -94,22 +129,29 @@ async function executarBloco(linhas){
                 .slice(4, -1)
                 .trim();
 
-            log("Entrada para " + variavel + ":");
+            log(
+                "Entrada para " +
+                variavel +
+                ":"
+            );
 
-            const entrada = await esperarEntrada();
+            const entrada =
+                await esperarEntrada();
 
-            const numero = Number(entrada);
+            const numero =
+                Number(entrada);
 
-            variables[variavel] = isNaN(numero)
+            variables[variavel] =
+                isNaN(numero)
                 ? entrada
                 : numero;
 
             continue;
         }
 
-        // =====================
+        // ==========================
         // MOSTRAR
-        // =====================
+        // ==========================
 
         if(linha.startsWith("MOSTRAR(")){
 
@@ -117,21 +159,35 @@ async function executarBloco(linhas){
                 .slice(8, -1)
                 .trim();
 
-            if(variables.hasOwnProperty(conteudo)){
+            // Variável simples
+            if(
+                variables.hasOwnProperty(
+                    conteudo
+                )
+            ){
 
-                log(String(variables[conteudo]));
+                log(
+                    String(
+                        variables[conteudo]
+                    )
+                );
 
             }else{
 
-                log(String(avaliar(conteudo)));
+                // Expressão
+                log(
+                    String(
+                        avaliar(conteudo)
+                    )
+                );
             }
 
             continue;
         }
 
-        // =====================
+        // ==========================
         // SE / SENAO
-        // =====================
+        // ==========================
 
         if(linha.startsWith("SE(")){
 
@@ -142,13 +198,14 @@ async function executarBloco(linhas){
             let blocoSe = [];
             let blocoSenao = [];
 
-            i++;
-
             let usandoSenao = false;
+
+            i++;
 
             while(i < linhas.length){
 
-                let atual = linhas[i].trim();
+                let atual =
+                    linhas[i].trim();
 
                 if(atual === "SENAO"){
 
@@ -165,11 +222,15 @@ async function executarBloco(linhas){
 
                 if(usandoSenao){
 
-                    blocoSenao.push(linhas[i]);
+                    blocoSenao.push(
+                        linhas[i]
+                    );
 
                 }else{
 
-                    blocoSe.push(linhas[i]);
+                    blocoSe.push(
+                        linhas[i]
+                    );
                 }
 
                 i++;
@@ -177,43 +238,58 @@ async function executarBloco(linhas){
 
             if(avaliar(condicao)){
 
-                await executarBloco(blocoSe);
+                await executarBloco(
+                    blocoSe
+                );
 
             }else{
 
-                await executarBloco(blocoSenao);
+                await executarBloco(
+                    blocoSenao
+                );
             }
 
             continue;
         }
 
-        // =====================
+        // ==========================
         // ATRIBUIÇÃO
-        // =====================
+        // ==========================
 
         if(linha.includes("=")){
 
-            const partes = linha.split("=");
+            const partes =
+                linha.split("=");
 
-            const nome = partes[0].trim();
+            const nome =
+                partes[0].trim();
 
-            const expr = partes
+            const expressao =
+                partes
                 .slice(1)
                 .join("=")
                 .trim();
 
-            variables[nome] = avaliar(expr);
+            variables[nome] =
+                avaliar(expressao);
 
             continue;
         }
 
-        // =====================
+        // ==========================
         // ERRO
-        // =====================
+        // ==========================
 
-        log("Comando desconhecido: " + linha);
+        log(
+            "Comando desconhecido: " +
+            linha
+        );
     }
 }
+
+// ======================================
+// EXECUTAR
+// ======================================
 
 async function executarCodigo(){
 
@@ -221,23 +297,36 @@ async function executarCodigo(){
 
     variables = {};
 
-    const codigo = document
+    const codigo =
+        document
         .getElementById("editor")
         .value;
 
-    const linhas = codigo.split("\\n");
+    const linhas =
+        codigo.split("\n");
 
     try{
 
-        await executarBloco(linhas);
+        await executarBloco(
+            linhas
+        );
 
-        log("\\nExecução finalizada.");
+        log(
+            "\nExecução finalizada."
+        );
 
     }catch(err){
 
-        log("\\nERRO: " + err.message);
+        log(
+            "\nERRO: " +
+            err.message
+        );
     }
 }
+
+// ======================================
+// EXEMPLO
+// ======================================
 
 function carregarExemplo(){
 
@@ -256,6 +345,8 @@ SE(soma > 10)
 SENAO
     MOSTRAR(0)
 FIMSE
+
+MOSTRAR(x + y)
 
 FIM`;
 }
