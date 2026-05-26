@@ -31,20 +31,8 @@ FIMSE
 FIM
 ```
 
-## Como publicar no GitHub Pages
 
-1. Crie um repositório
-2. Envie os arquivos
-3. Vá em:
-   Settings -> Pages
-4. Escolha:
-   Deploy from branch
-5. Branch:
-   main
-6. Salve
-
-Seu site ficará:
 
 ```txt
-https://seuusuario.github.io/repositorio
+https://atenasme.github.io/Sinistro
 ```
