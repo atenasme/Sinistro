@@ -1,4 +1,3 @@
-
 const consoleElement = document.getElementById("console");
 const inputElement = document.getElementById("userInput");
 
@@ -6,7 +5,7 @@ let variables = {};
 let pendingResolve = null;
 
 function log(text){
-    consoleElement.innerHTML += text + "\n";
+    consoleElement.innerHTML += text + "\\n";
     consoleElement.scrollTop = consoleElement.scrollHeight;
 }
 
@@ -15,24 +14,38 @@ function limparConsole(){
 }
 
 function enviarEntrada(){
+
     if(pendingResolve){
+
         const value = inputElement.value;
+
         inputElement.value = "";
+
         pendingResolve(value);
+
         pendingResolve = null;
     }
 }
 
 function esperarEntrada(){
+
     return new Promise(resolve => {
+
         pendingResolve = resolve;
     });
 }
 
 function avaliar(expr){
+
     try{
-        return Function(...Object.keys(variables), `return ${expr}`)(...Object.values(variables));
+
+        return Function(
+            ...Object.keys(variables),
+            `return ${expr}`
+        )(...Object.values(variables));
+
     }catch(err){
+
         throw new Error("Erro na expressão: " + expr);
     }
 }
@@ -49,20 +62,33 @@ async function executarBloco(linhas){
             continue;
         }
 
+        // =====================
+        // GUARDAR
+        // =====================
+
         if(linha.startsWith("GUARDAR")){
 
-            const vars = linha.replace("GUARDAR","").split(",");
+            const vars = linha
+                .replace("GUARDAR", "")
+                .split(",");
 
             vars.forEach(v => {
+
                 variables[v.trim()] = 0;
             });
 
             continue;
         }
 
+        // =====================
+        // LER
+        // =====================
+
         if(linha.startsWith("LER(")){
 
-            const variavel = linha.substring(4, linha.length - 1);
+            const variavel = linha
+                .slice(4, -1)
+                .trim();
 
             log("Entrada para " + variavel + ":");
 
@@ -70,27 +96,44 @@ async function executarBloco(linhas){
 
             const numero = Number(entrada);
 
-            variables[variavel] = isNaN(numero) ? entrada : numero;
+            variables[variavel] = isNaN(numero)
+                ? entrada
+                : numero;
 
             continue;
         }
 
+        // =====================
+        // MOSTRAR
+        // =====================
+
         if(linha.startsWith("MOSTRAR(")){
 
-            const conteudo = linha.substring(8, linha.length - 1);
+            const conteudo = linha
+                .slice(9, -1)
+                .trim();
 
             if(variables.hasOwnProperty(conteudo)){
+
                 log(String(variables[conteudo]));
+
             }else{
+
                 log(String(avaliar(conteudo)));
             }
 
             continue;
         }
 
+        // =====================
+        // SE / SENAO
+        // =====================
+
         if(linha.startsWith("SE(")){
 
-            const condicao = linha.substring(3, linha.length - 1);
+            const condicao = linha
+                .slice(3, -1)
+                .trim();
 
             let blocoSe = [];
             let blocoSenao = [];
@@ -104,8 +147,11 @@ async function executarBloco(linhas){
                 let atual = linhas[i].trim();
 
                 if(atual === "SENAO"){
+
                     usandoSenao = true;
+
                     i++;
+
                     continue;
                 }
 
@@ -114,8 +160,11 @@ async function executarBloco(linhas){
                 }
 
                 if(usandoSenao){
+
                     blocoSenao.push(linhas[i]);
+
                 }else{
+
                     blocoSe.push(linhas[i]);
                 }
 
@@ -123,25 +172,40 @@ async function executarBloco(linhas){
             }
 
             if(avaliar(condicao)){
+
                 await executarBloco(blocoSe);
+
             }else{
+
                 await executarBloco(blocoSenao);
             }
 
             continue;
         }
 
+        // =====================
+        // ATRIBUIÇÃO
+        // =====================
+
         if(linha.includes("=")){
 
             const partes = linha.split("=");
 
             const nome = partes[0].trim();
-            const expr = partes.slice(1).join("=").trim();
+
+            const expr = partes
+                .slice(1)
+                .join("=")
+                .trim();
 
             variables[nome] = avaliar(expr);
 
             continue;
         }
+
+        // =====================
+        // ERRO
+        // =====================
 
         log("Comando desconhecido: " + linha);
     }
@@ -153,21 +217,28 @@ async function executarCodigo(){
 
     variables = {};
 
-    const codigo = document.getElementById("editor").value;
+    const codigo = document
+        .getElementById("editor")
+        .value;
 
-    const linhas = codigo.split("\n");
+    const linhas = codigo.split("\\n");
 
     try{
+
         await executarBloco(linhas);
-        log("\nExecução finalizada.");
+
+        log("\\nExecução finalizada.");
+
     }catch(err){
-        log("\nERRO: " + err.message);
+
+        log("\\nERRO: " + err.message);
     }
 }
 
 function carregarExemplo(){
 
-document.getElementById("editor").value = `INICIO
+document.getElementById("editor").value =
+`INICIO
 
 GUARDAR x, y, soma
 
