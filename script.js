@@ -90,7 +90,7 @@ async function executarBloco(linhas){
             linhas[i].trim();
 
         // ==========================
-        // IGNORAR LINHA VAZIA
+        // IGNORAR LINHAS VAZIAS
         // ==========================
 
         if(linha === ""){
@@ -205,59 +205,63 @@ async function executarBloco(linhas){
             continue;
         }
 
-
         // ==========================
         // ESCREVER
         // ==========================
-        
+
         if(
             linha.startsWith(
                 "ESCREVER("
             )
         ){
-        
+
             let fecha =
                 linha.lastIndexOf(")");
-        
+
             let conteudo =
                 linha
                 .substring(9, fecha)
                 .trim();
-        
-            // Se existir variável
+
+            // Variável
             if(
                 variables.hasOwnProperty(
                     conteudo
                 )
             ){
-        
+
                 log(
                     String(
                         variables[conteudo]
                     )
                 );
-        
+
             }else{
-        
-                // Tenta avaliar como expressão
+
+                // Expressão
                 try{
-        
+
                     let resultado =
-                        avaliar(conteudo);
-        
+                        avaliar(
+                            conteudo
+                        );
+
                     log(
-                        String(resultado)
+                        String(
+                            resultado
+                        )
                     );
-        
+
                 }catch{
-        
-                    // Texto puro sem aspas
+
+                    // Texto puro
                     log(conteudo);
                 }
             }
-        
+
             continue;
         }
+
         // ==========================
         // SE / SENAO
         // ==========================
@@ -432,15 +436,25 @@ document.getElementById("editor").value =
 
 GUARDAR x, y, soma
 
+ESCREVER(Bem vindo ao pseudoC)
+
 LER(x)
 LER(y)
 
 soma = x + y
 
+ESCREVER(Resultado:)
+
+MOSTRAR(soma)
+
 SE(soma > 10)
-    MOSTRAR(soma)
+
+    ESCREVER(Maior que 10)
+
 SENAO
-    MOSTRAR(0)
+
+    ESCREVER(Menor ou igual a 10)
+
 FIMSE
 
 MOSTRAR(x + y)
