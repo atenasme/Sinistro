@@ -191,64 +191,66 @@ async function executarBloco(linhas){
 
         if(linha.startsWith("SE(")){
 
+            const fechaParenteses =
+                linha.lastIndexOf(")");
+        
             const condicao = linha
-                .slice(3, -1)
+                .substring(3, fechaParenteses)
                 .trim();
-
+        
             let blocoSe = [];
             let blocoSenao = [];
-
+        
             let usandoSenao = false;
-
+        
             i++;
-
+        
             while(i < linhas.length){
-
-                let atual =
-                    linhas[i].trim();
-
+        
+                let atual = linhas[i].trim();
+        
                 if(atual === "SENAO"){
-
+        
                     usandoSenao = true;
-
+        
                     i++;
-
+        
                     continue;
                 }
-
+        
                 if(atual === "FIMSE"){
                     break;
                 }
-
+        
                 if(usandoSenao){
-
+        
                     blocoSenao.push(
                         linhas[i]
                     );
-
+        
                 }else{
-
+        
                     blocoSe.push(
                         linhas[i]
                     );
                 }
-
+        
                 i++;
             }
-
+        
             if(avaliar(condicao)){
-
+        
                 await executarBloco(
                     blocoSe
                 );
-
+        
             }else{
-
+        
                 await executarBloco(
                     blocoSenao
                 );
             }
-
+        
             continue;
         }
 
