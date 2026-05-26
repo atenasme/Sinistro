@@ -1,3 +1,7 @@
+// =====================================
+// PSEUDOC INTERPRETER
+// =====================================
+
 const consoleElement =
     document.getElementById("console");
 
@@ -8,9 +12,9 @@ let variables = {};
 
 let pendingResolve = null;
 
-// ======================================
+// =====================================
 // CONSOLE
-// ======================================
+// =====================================
 
 function log(text){
 
@@ -26,13 +30,15 @@ function limparConsole(){
     consoleElement.innerHTML = "";
 }
 
-// ======================================
+// =====================================
 // INPUT
-// ======================================
+// =====================================
 
 function enviarEntrada(){
 
-    if(!pendingResolve) return;
+    if(!pendingResolve){
+        return;
+    }
 
     const valor =
         inputElement.value;
@@ -52,17 +58,70 @@ function esperarEntrada(){
     });
 }
 
-// ======================================
-// EXPRESSÕES
-// ======================================
+// =====================================
+// VALIDAR VARIÁVEIS
+// =====================================
+
+function validarVariaveis(expressao){
+
+    const tokens =
+        expressao.match(
+            /[a-zA-Z_][a-zA-Z0-9_]*/g
+        ) || [];
+
+    for(const token of tokens){
+
+        // Ignorar palavras JS
+
+        if([
+            "true",
+            "false",
+            "null",
+            "undefined"
+        ].includes(token)){
+            continue;
+        }
+
+        // Variável não existe
+
+        if(
+            !variables.hasOwnProperty(
+                token
+            )
+        ){
+
+            throw new Error(
+                "Variável inexistente: " +
+                token
+            );
+        }
+    }
+}
+
+// =====================================
+// AVALIAR EXPRESSÃO
+// =====================================
 
 function avaliar(expressao){
+
+    expressao =
+        expressao.trim();
+
+    if(expressao === ""){
+
+        throw new Error(
+            "Expressão vazia"
+        );
+    }
+
+    validarVariaveis(expressao);
 
     try{
 
         return Function(
             ...Object.keys(variables),
-            "return (" + expressao + ");"
+            `"use strict";
+            return (${expressao});`
         )(...Object.values(variables));
 
     }catch{
@@ -74,9 +133,39 @@ function avaliar(expressao){
     }
 }
 
-// ======================================
+// =====================================
+// EXTRAIR CONTEÚDO
+// =====================================
+
+function extrairComando(
+    linha,
+    comando
+){
+
+    const regex =
+        new RegExp(
+            "^" +
+            comando +
+            "\\((.*)\\)$"
+        );
+
+    const match =
+        linha.match(regex);
+
+    if(!match){
+
+        throw new Error(
+            "Sintaxe inválida: " +
+            linha
+        );
+    }
+
+    return match[1].trim();
+}
+
+// =====================================
 // EXECUTAR BLOCO
-// ======================================
+// =====================================
 
 async function executarBloco(linhas){
 
@@ -87,21 +176,23 @@ async function executarBloco(linhas){
     ){
 
         let linha =
-            linhas[i]
+            linhas[i];
+
+        // Normalizar
+
+        linha = linha
             .replace(/\r/g, "")
             .trim();
 
-        // ==========================
-        // IGNORAR LINHA VAZIA
-        // ==========================
+        // Ignorar vazio
 
         if(linha === ""){
             continue;
         }
 
-        // ==========================
+        // =================================
         // INICIO / FIM
-        // ==========================
+        // =================================
 
         if(
             linha === "INICIO" ||
@@ -110,40 +201,44 @@ async function executarBloco(linhas){
             continue;
         }
 
-        // ==========================
+        // =================================
         // GUARDAR
-        // ==========================
+        // =================================
 
         if(
             linha.startsWith(
-                "GUARDAR"
+                "GUARDAR "
             )
         ){
 
-            let conteudo =
+            const conteudo =
                 linha
-                .substring(8)
+                .replace(
+                    "GUARDAR",
+                    ""
+                )
                 .trim();
 
-            let nomes =
+            const lista =
                 conteudo.split(",");
 
-            for(let nome of nomes){
+            for(let nome of lista){
 
                 nome = nome.trim();
 
-                if(nome !== ""){
-
-                    variables[nome] = 0;
+                if(nome === ""){
+                    continue;
                 }
+
+                variables[nome] = 0;
             }
 
             continue;
         }
 
-        // ==========================
+        // =================================
         // LER
-        // ==========================
+        // =================================
 
         if(
             linha.startsWith(
@@ -151,13 +246,23 @@ async function executarBloco(linhas){
             )
         ){
 
-            let fecha =
-                linha.lastIndexOf(")");
+            const variavel =
+                extrairComando(
+                    linha,
+                    "LER"
+                );
 
-            let variavel =
-                linha
-                .substring(4, fecha)
-                .trim();
+            if(
+                !variables.hasOwnProperty(
+                    variavel
+                )
+            ){
+
+                throw new Error(
+                    "Variável não declarada: " +
+                    variavel
+                );
+            }
 
             log(
                 "Entrada para " +
@@ -179,9 +284,9 @@ async function executarBloco(linhas){
             continue;
         }
 
-        // ==========================
+        // =================================
         // MOSTRAR
-        // ==========================
+        // =================================
 
         if(
             linha.startsWith(
@@ -189,27 +294,36 @@ async function executarBloco(linhas){
             )
         ){
 
-            let fecha =
-                linha.lastIndexOf(")");
+            const conteudo =
+                extrairComando(
+                    linha,
+                    "MOSTRAR"
+                );
 
-            let conteudo =
-                linha
-                .slice(8, fecha)
-                .trim();
+            try{
 
-            let resultado =
-                avaliar(conteudo);
+                const resultado =
+                    avaliar(
+                        conteudo
+                    );
 
-            log(
-                String(resultado)
-            );
+                log(
+                    String(
+                        resultado
+                    )
+                );
+
+            }catch{
+
+                log(conteudo);
+            }
 
             continue;
         }
 
-        // ==========================
+        // =================================
         // ESCREVER
-        // ==========================
+        // =================================
 
         if(
             linha.startsWith(
@@ -217,13 +331,11 @@ async function executarBloco(linhas){
             )
         ){
 
-            let fecha =
-                linha.lastIndexOf(")");
-
-            let conteudo =
-                linha
-                .slice(9, fecha)
-                .trim();
+            const conteudo =
+                extrairComando(
+                    linha,
+                    "ESCREVER"
+                );
 
             // Variável
 
@@ -235,41 +347,43 @@ async function executarBloco(linhas){
 
                 log(
                     String(
-                        variables[conteudo]
+                        variables[
+                            conteudo
+                        ]
                     )
                 );
 
-            }else{
+                continue;
+            }
 
-                // Expressão
+            // Expressão
 
-                try{
+            try{
 
-                    let resultado =
-                        avaliar(
-                            conteudo
-                        );
-
-                    log(
-                        String(
-                            resultado
-                        )
+                const resultado =
+                    avaliar(
+                        conteudo
                     );
 
-                }catch{
+                log(
+                    String(
+                        resultado
+                    )
+                );
 
-                    // Texto puro
+            }catch{
 
-                    log(conteudo);
-                }
+                // Texto
+
+                log(conteudo);
             }
 
             continue;
         }
 
-        // ==========================
-        // SE / SENAO
-        // ==========================
+        // =================================
+        // SE
+        // =================================
 
         if(
             linha.startsWith(
@@ -277,13 +391,11 @@ async function executarBloco(linhas){
             )
         ){
 
-            let fecha =
-                linha.lastIndexOf(")");
-
-            let condicao =
-                linha
-                .substring(3, fecha)
-                .trim();
+            const condicao =
+                extrairComando(
+                    linha,
+                    "SE"
+                );
 
             let blocoSe = [];
 
@@ -300,8 +412,16 @@ async function executarBloco(linhas){
 
                 let atual =
                     linhas[i]
-                    .replace(/\r/g, "")
+                    .replace(
+                        /\r/g,
+                        ""
+                    )
                     .trim();
+
+                if(atual === ""){
+                    i++;
+                    continue;
+                }
 
                 // SENAO
 
@@ -309,7 +429,8 @@ async function executarBloco(linhas){
                     atual === "SENAO"
                 ){
 
-                    usandoSenao = true;
+                    usandoSenao =
+                        true;
 
                     i++;
 
@@ -342,7 +463,18 @@ async function executarBloco(linhas){
                 i++;
             }
 
-            // Executar condição
+            // Validar fechamento
+
+            if(
+                i >= linhas.length
+            ){
+
+                throw new Error(
+                    "FIMSE não encontrado"
+                );
+            }
+
+            // Executar
 
             if(
                 avaliar(condicao)
@@ -362,26 +494,47 @@ async function executarBloco(linhas){
             continue;
         }
 
-        // ==========================
+        // =================================
         // ATRIBUIÇÃO
-        // ==========================
+        // =================================
 
         if(
             linha.includes("=")
         ){
 
-            let partes =
+            const partes =
                 linha.split("=");
 
-            let variavel =
+            if(
+                partes.length < 2
+            ){
+
+                throw new Error(
+                    "Atribuição inválida"
+                );
+            }
+
+            const variavel =
                 partes[0]
                 .trim();
 
-            let expressao =
+            const expressao =
                 partes
                 .slice(1)
                 .join("=")
                 .trim();
+
+            if(
+                !variables.hasOwnProperty(
+                    variavel
+                )
+            ){
+
+                throw new Error(
+                    "Variável não declarada: " +
+                    variavel
+                );
+            }
 
             variables[variavel] =
                 avaliar(expressao);
@@ -389,20 +542,20 @@ async function executarBloco(linhas){
             continue;
         }
 
-        // ==========================
+        // =================================
         // COMANDO DESCONHECIDO
-        // ==========================
+        // =================================
 
-        log(
+        throw new Error(
             "Comando desconhecido: " +
             linha
         );
     }
 }
 
-// ======================================
-// EXECUTAR
-// ======================================
+// =====================================
+// EXECUTAR CÓDIGO
+// =====================================
 
 async function executarCodigo(){
 
@@ -410,14 +563,14 @@ async function executarCodigo(){
 
     variables = {};
 
-    let codigo =
+    const codigo =
         document
         .getElementById(
             "editor"
         )
         .value;
 
-    let linhas =
+    const linhas =
         codigo
         .replace(/\r/g, "")
         .split("\n");
@@ -441,9 +594,9 @@ async function executarCodigo(){
     }
 }
 
-// ======================================
+// =====================================
 // EXEMPLO
-// ======================================
+// =====================================
 
 function carregarExemplo(){
 
