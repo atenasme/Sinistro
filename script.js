@@ -1,7 +1,11 @@
-const consoleElement = document.getElementById("console");
-const inputElement = document.getElementById("userInput");
+const consoleElement =
+    document.getElementById("console");
+
+const inputElement =
+    document.getElementById("userInput");
 
 let variables = {};
+
 let pendingResolve = null;
 
 // ======================================
@@ -10,7 +14,8 @@ let pendingResolve = null;
 
 function log(text){
 
-    consoleElement.innerHTML += text + "\n";
+    consoleElement.innerHTML +=
+        text + "\\n";
 
     consoleElement.scrollTop =
         consoleElement.scrollHeight;
@@ -29,7 +34,8 @@ function enviarEntrada(){
 
     if(!pendingResolve) return;
 
-    const valor = inputElement.value;
+    const valor =
+        inputElement.value;
 
     inputElement.value = "";
 
@@ -56,13 +62,14 @@ function avaliar(expressao){
 
         return Function(
             ...Object.keys(variables),
-            `return ${expressao}`
+            "return (" + expressao + ");"
         )(...Object.values(variables));
 
     }catch(err){
 
         throw new Error(
-            "Erro na expressão: " + expressao
+            "Erro na expressão: " +
+            expressao
         );
     }
 }
@@ -73,12 +80,20 @@ function avaliar(expressao){
 
 async function executarBloco(linhas){
 
-    for(let i = 0; i < linhas.length; i++){
+    for(
+        let i = 0;
+        i < linhas.length;
+        i++
+    ){
 
-        let linha = linhas[i].trim();
+        let linha =
+            linhas[i].trim();
 
-        // Ignorar linha vazia
-        if(linha.length === 0){
+        // ==========================
+        // IGNORAR LINHA VAZIA
+        // ==========================
+
+        if(linha === ""){
             continue;
         }
 
@@ -97,20 +112,25 @@ async function executarBloco(linhas){
         // GUARDAR
         // ==========================
 
-        if(linha.startsWith("GUARDAR")){
+        if(
+            linha.startsWith(
+                "GUARDAR"
+            )
+        ){
 
-            let resto = linha
-                .replace("GUARDAR", "")
+            let conteudo =
+                linha
+                .substring(8)
                 .trim();
 
-            let listaVariaveis =
-                resto.split(",");
+            let nomes =
+                conteudo.split(",");
 
-            for(let nome of listaVariaveis){
+            for(let nome of nomes){
 
                 nome = nome.trim();
 
-                if(nome.length > 0){
+                if(nome !== ""){
 
                     variables[nome] = 0;
                 }
@@ -123,10 +143,18 @@ async function executarBloco(linhas){
         // LER
         // ==========================
 
-        if(linha.startsWith("LER(")){
+        if(
+            linha.startsWith(
+                "LER("
+            )
+        ){
 
-            const variavel = linha
-                .slice(4, -1)
+            let fecha =
+                linha.lastIndexOf(")");
+
+            let variavel =
+                linha
+                .substring(4, fecha)
                 .trim();
 
             log(
@@ -153,34 +181,26 @@ async function executarBloco(linhas){
         // MOSTRAR
         // ==========================
 
-        if(linha.startsWith("MOSTRAR(")){
+        if(
+            linha.startsWith(
+                "MOSTRAR("
+            )
+        ){
 
-            const conteudo = linha
-                .slice(8, -1)
+            let fecha =
+                linha.lastIndexOf(")");
+
+            let conteudo =
+                linha
+                .substring(9, fecha)
                 .trim();
 
-            // Variável simples
-            if(
-                variables.hasOwnProperty(
-                    conteudo
-                )
-            ){
+            let resultado =
+                avaliar(conteudo);
 
-                log(
-                    String(
-                        variables[conteudo]
-                    )
-                );
-
-            }else{
-
-                // Expressão
-                log(
-                    String(
-                        avaliar(conteudo)
-                    )
-                );
-            }
+            log(
+                String(resultado)
+            );
 
             continue;
         }
@@ -189,68 +209,85 @@ async function executarBloco(linhas){
         // SE / SENAO
         // ==========================
 
-        if(linha.startsWith("SE(")){
+        if(
+            linha.startsWith(
+                "SE("
+            )
+        ){
 
-            const fechaParenteses =
+            let fecha =
                 linha.lastIndexOf(")");
-        
-            const condicao = linha
-                .substring(3, fechaParenteses)
+
+            let condicao =
+                linha
+                .substring(3, fecha)
                 .trim();
-        
+
             let blocoSe = [];
+
             let blocoSenao = [];
-        
-            let usandoSenao = false;
-        
+
+            let usandoSenao =
+                false;
+
             i++;
-        
-            while(i < linhas.length){
-        
-                let atual = linhas[i].trim();
-        
-                if(atual === "SENAO"){
-        
+
+            while(
+                i < linhas.length
+            ){
+
+                let atual =
+                    linhas[i]
+                    .trim();
+
+                if(
+                    atual === "SENAO"
+                ){
+
                     usandoSenao = true;
-        
+
                     i++;
-        
+
                     continue;
                 }
-        
-                if(atual === "FIMSE"){
+
+                if(
+                    atual === "FIMSE"
+                ){
                     break;
                 }
-        
+
                 if(usandoSenao){
-        
+
                     blocoSenao.push(
                         linhas[i]
                     );
-        
+
                 }else{
-        
+
                     blocoSe.push(
                         linhas[i]
                     );
                 }
-        
+
                 i++;
             }
-        
-            if(avaliar(condicao)){
-        
+
+            if(
+                avaliar(condicao)
+            ){
+
                 await executarBloco(
                     blocoSe
                 );
-        
+
             }else{
-        
+
                 await executarBloco(
                     blocoSenao
                 );
             }
-        
+
             continue;
         }
 
@@ -258,28 +295,31 @@ async function executarBloco(linhas){
         // ATRIBUIÇÃO
         // ==========================
 
-        if(linha.includes("=")){
+        if(
+            linha.includes("=")
+        ){
 
-            const partes =
+            let partes =
                 linha.split("=");
 
-            const nome =
-                partes[0].trim();
+            let variavel =
+                partes[0]
+                .trim();
 
-            const expressao =
+            let expressao =
                 partes
                 .slice(1)
                 .join("=")
                 .trim();
 
-            variables[nome] =
+            variables[variavel] =
                 avaliar(expressao);
 
             continue;
         }
 
         // ==========================
-        // ERRO
+        // COMANDO DESCONHECIDO
         // ==========================
 
         log(
@@ -299,13 +339,15 @@ async function executarCodigo(){
 
     variables = {};
 
-    const codigo =
+    let codigo =
         document
-        .getElementById("editor")
+        .getElementById(
+            "editor"
+        )
         .value;
 
-    const linhas =
-        codigo.split("\n");
+    let linhas =
+        codigo.split("\\n");
 
     try{
 
@@ -314,13 +356,13 @@ async function executarCodigo(){
         );
 
         log(
-            "\nExecução finalizada."
+            "\\nExecução finalizada."
         );
 
     }catch(err){
 
         log(
-            "\nERRO: " +
+            "\\nERRO: " +
             err.message
         );
     }
